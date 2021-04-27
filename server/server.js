@@ -19,7 +19,23 @@ app.get("/api/restaurants", async (req, res) => {
     console.log(error);
   }
 });
-app.post("/api/restaurants", (req, res) => {});
+app.post("/api/restaurants", async (req, res) => {
+  const { name, location, price_range } = req.body;
+  try {
+    const result = await db.query(
+      "insert into restaurants (name, location, price_range) values ($1, $2, $3) returning *",
+      [name, location, price_range]
+    );
+
+    res.status(201).json({
+      success: true,
+      restaurant: result.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 app.get("/api/restaurants/:id", async (req, res) => {
   try {
     let restauran = await db.query("SELECT * FROM restaurants WHERE id=$1", [
