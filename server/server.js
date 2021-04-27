@@ -12,8 +12,10 @@ app.get("/api/restaurants", async (req, res) => {
     const results = await db.query("SELECT * FROM restaurants");
     res.status(200).json({
       success: true,
-      restaurants: results.rows,
-      count: results.rows.length,
+      data: {
+        restaurants: results.rows,
+        count: results.rows.length,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -28,8 +30,10 @@ app.post("/api/restaurants", async (req, res) => {
     );
 
     res.status(201).json({
-      success: true,
-      restaurant: result.rows[0],
+      data: {
+        success: true,
+        restaurant: result.rows[0],
+      },
     });
   } catch (error) {
     console.log(error);
@@ -42,30 +46,47 @@ app.get("/api/restaurants/:id", async (req, res) => {
       req.params.id,
     ]);
     res.status(200).json({
-      success: true,
-      result: restauran.rows[0],
+      data: {
+        success: true,
+        result: restauran.rows[0],
+      },
     });
   } catch (error) {
     console.log(error);
   }
 });
+
 app.put("/api/restaurants/:id", async (req, res) => {
   const { name, location, price_range } = req.body;
-  const { id } = req.params.id;
   try {
     const results = await db.query(
-      "update restaurants set name=$1, location=$2, price_range=$3 where id=$4 returning *",
-      [name, location, price_range, id]
+      "UPDATE restaurants SET name=$1, location=$2, price_range=$3 WHERE id=$4 returning *",
+      [name, location, price_range, req.params.id]
     );
+
     res.status(200).json({
-      success: true,
-      restaurant: results.rows[0],
+      data: {
+        success: true,
+        restaurant: results.rows[0],
+      },
     });
   } catch (error) {
     console.log(error);
   }
 });
-app.delete("/api/restaurants", (req, res) => {});
+app.delete("/api/restaurants/:id", async (req, res) => {
+  try {
+    const results = await db.query("DELETE FROM restaurants WHERE id=$1", [
+      req.params.id,
+    ]);
+
+    res.status(204).json({
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 const PORT = 4000;
 app.listen(PORT, () => {
