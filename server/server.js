@@ -49,7 +49,22 @@ app.get("/api/restaurants/:id", async (req, res) => {
     console.log(error);
   }
 });
-app.put("/api/restaurants/:id", (req, res) => {});
+app.put("/api/restaurants/:id", async (req, res) => {
+  const { name, location, price_range } = req.body;
+  const { id } = req.params.id;
+  try {
+    const results = await db.query(
+      "update restaurants set name=$1, location=$2, price_range=$3 where id=$4 returning *",
+      [name, location, price_range, id]
+    );
+    res.status(200).json({
+      success: true,
+      restaurant: results.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
 app.delete("/api/restaurants", (req, res) => {});
 
 const PORT = 4000;
